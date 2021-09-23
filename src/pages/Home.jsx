@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useHistory } from "react-router";
 import { toast } from "react-toastify";
@@ -19,6 +19,7 @@ const Home = () => {
   const [title, setTitle] = useState("");
   const [edit, setEdit] = useState(false);
   const [toDoEdit, setToDoEdit] = useState({});
+  const [toDoFinished, setToDoFinished] = useState(0)
 
   //FUNCTIONS
   const handleDelete = (id) => {
@@ -36,16 +37,20 @@ const Home = () => {
   const addNewToDo = (e) => {
     e.preventDefault();
     if (title.trim()) {
-      const toCreate = {
-        title,
-        id: Date.now().toString(),
-        completed: false,
-      };
-      try {
-        dispatch(toDoActions.addTodo(toCreate));
-        toast.success("New Task added");
-      } catch (error) {
-        toast.error("Error to add Task");
+      if (toDo.length < 20) {
+        const toCreate = {
+          title,
+          id: Date.now().toString(),
+          completed: false,
+        };
+        try {
+          dispatch(toDoActions.addTodo(toCreate));
+          toast.success("New Task added");
+        } catch (error) {
+          toast.error("Error to add Task");
+        }
+      } else {
+        toast.error("You exceeded the Task limit");
       }
       setTitle("");
     }
@@ -73,6 +78,18 @@ const Home = () => {
     }
   };
 
+  const checkTaskWithOutFinish = () => {
+    const toDoCopy = [...toDo]
+    const tasks = []
+    toDoCopy.map(item => {
+      if(item.completed){
+        tasks.push(item)
+      }
+      return item
+    })
+    setToDoFinished(tasks.length)
+  }
+
   const logoutFn = () => {
     dispatch(userActions.logoutAction());
     history.push("/login");
@@ -81,6 +98,10 @@ const Home = () => {
   const desactiveEdit = () => {
     setEdit(!edit);
   };
+
+  useEffect(() => {
+    checkTaskWithOutFinish()
+  }, [toDo])
 
   return (
     <div>
@@ -117,15 +138,22 @@ const Home = () => {
                     </div>
                   </form>
                   {toDo.length > 0 ? (
-                    toDo.map((item) => (
-                      <ToDoRender
-                        key={item.id}
-                        toDo={item}
-                        onComplete={() => handleComplete(item.id)}
-                        onDelete={() => handleDelete(item.id)}
-                        onEdit={() => handleEdit(item)}
-                      />
-                    ))
+                    <>
+                    <h3 className="mt-3">{
+                      toDoFinished === toDo.length ? "All tasks Finished :)" : `Task Finished: ${toDoFinished}/${toDo.length} `
+                    }</h3>
+                    {
+                      toDo.map((item) => (
+                        <ToDoRender
+                          key={item.id}
+                          toDo={item}
+                          onComplete={() => handleComplete(item.id)}
+                          onDelete={() => handleDelete(item.id)}
+                          onEdit={() => handleEdit(item)}
+                        />
+                      ))
+                    }
+                    </>
                   ) : (
                     <h1 className="text-center mt-5">No Pending Tasks :)</h1>
                   )}
