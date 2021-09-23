@@ -11,3 +11,17 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.card-css{
+  box-shadow: 0 4px 8px 2px rgba(0,0,0,0.2);
+  transition: 0.3s;
+  border-radius: 15px;
+}
+
+.title-container {
+  width: 80%;
+}
+
+.title { 
+  width: 28rem;
+}
