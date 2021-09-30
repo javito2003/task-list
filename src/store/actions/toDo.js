@@ -4,6 +4,7 @@ import { ActionType } from "../action-types/toDo";
 
 export const fetchToDo = () => async (dispatch) => {
     try {
+        console.log("fetching");
         const res = await fetch("https://jsonplaceholder.typicode.com/todos")
         const json = await res.json()
         dispatch({
@@ -11,8 +12,9 @@ export const fetchToDo = () => async (dispatch) => {
             payload: json.splice(0, 10)
         })
     } catch (error) {
+        console.log("error");
         setTimeout(() => {
-            fetchToDo()
+            dispatch(fetchToDo())
         }, 3000)
         dispatch({
             type: ErrorType.ERROR_GET_TODO,
