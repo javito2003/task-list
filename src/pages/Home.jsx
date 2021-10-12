@@ -17,9 +17,11 @@ const Home = () => {
 
   //STATE
   const [title, setTitle] = useState("");
+  const [filterList, setFilterList] = useState("All")
+  const [dataRender, setDataRender] = useState([])
   const [edit, setEdit] = useState(false);
   const [toDoEdit, setToDoEdit] = useState({});
-  const [toDoFinished, setToDoFinished] = useState(0)
+  const [toDoFinished, setToDoFinished] = useState(0);
 
   //FUNCTIONS
   const handleDelete = (id) => {
@@ -79,36 +81,77 @@ const Home = () => {
   };
 
   const checkTaskWithOutFinish = () => {
-    const toDoCopy = [...toDo]
-    const tasks = []
-    toDoCopy.map(item => {
-      if(item.completed){
-        tasks.push(item)
+    const toDoCopy = [...toDo];
+    const tasks = [];
+    toDoCopy.map((item) => {
+      if (item.completed) {
+        tasks.push(item);
       }
-      return item
-    })
-    setToDoFinished(tasks.length)
-  }
+      return item;
+    });
+    setToDoFinished(tasks.length);
+  };
 
   const logoutFn = () => {
     dispatch(userActions.logoutAction());
     history.push("/login");
   };
 
+  const handleFilter = (e) => {
+    setFilterList(e.target.value)
+    let copy = [...toDo]
+    switch(e.target.value){
+      case "all":
+        setDataRender(toDo)
+        break
+      case "completed":
+        setDataRender(copy.filter(item => item.completed !== false))
+        break
+      case "uncompleted":
+        setDataRender(copy.filter(item => item.completed !== true))
+        break
+      default:
+        setDataRender(toDo)
+    }
+  }
+
+  const setTodoToRender = () => {
+    let copy = [...toDo]
+    switch(filterList){
+      case "all":
+        setDataRender(toDo)
+        break
+      case "completed":
+        setDataRender(copy.filter(item => item.completed !== false))
+        break
+      case "uncompleted":
+        setDataRender(copy.filter(item => item.completed !== true))
+        break
+      default:
+        setDataRender(toDo)
+    }
+  }
+
+
   const desactiveEdit = () => {
     setEdit(!edit);
   };
 
   useEffect(() => {
-    checkTaskWithOutFinish()
+      setDataRender(toDo)
   }, [toDo])
+
+  useEffect(() => {
+    setTodoToRender()
+    checkTaskWithOutFinish();
+  }, [toDo]);
 
   return (
     <div>
       <div className="container">
         <div className="mt-5">
           <div className="row ">
-            <div className="col-md-6 offset-md-3">
+            <div className="col-sm-12 col-lg-6 offset-lg-3">
               <h2
                 style={{ cursor: "pointer" }}
                 className="col-md-3"
@@ -138,12 +181,24 @@ const Home = () => {
                     </div>
                   </form>
                   {toDo.length > 0 ? (
-                    <>
-                    <h3 className="mt-3">{
-                      toDoFinished === toDo.length ? "All tasks Finished :)" : `Task Finished: ${toDoFinished}/${toDo.length} `
-                    }</h3>
-                    {
-                      toDo.map((item) => (
+                    <div>
+                      <div className="d-flex justify-content-between">
+                        <h3 className="mt-3">
+                          {toDoFinished === toDo.length
+                            ? "All tasks Finished :)"
+                            : `Task Finished: ${toDoFinished}/${toDo.length} `}
+                        </h3>
+                      </div>
+                        <select
+                          className="form-select"
+                          value={filterList}
+                          onChange={handleFilter}
+                        >
+                          <option value="all">All</option>
+                          <option value="completed">Completed</option>
+                          <option value="uncompleted">UnCompleted</option>
+                        </select>
+                      {dataRender.map((item) => (
                         <ToDoRender
                           key={item.id}
                           toDo={item}
@@ -151,9 +206,8 @@ const Home = () => {
                           onDelete={() => handleDelete(item.id)}
                           onEdit={() => handleEdit(item)}
                         />
-                      ))
-                    }
-                    </>
+                      ))}
+                    </div>
                   ) : (
                     <h1 className="text-center mt-5">No Pending Tasks :)</h1>
                   )}
